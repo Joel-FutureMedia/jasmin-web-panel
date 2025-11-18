@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   jasmin-web:
     image: tarekaec/jasmin_web_panel:1.4.2
@@ -74,7 +72,6 @@ services:
     environment:
       RABBITMQ_DEFAULT_USER: guest
       RABBITMQ_DEFAULT_PASS: guest
-      #RABBITMQ_SERVER_ADDITIONAL_ERL_ARGS: "-ssl_opts.server_name_indication disable"
     volumes:
       - ./rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
       - rabbitmq_data:/var/lib/rabbitmq
@@ -141,16 +138,17 @@ services:
     volumes:
       - ./jasmin_config/resource:/etc/jasmin/resource
       - ./jasmin_config:/etc/jasmin
+      # Mount sms_logger.py into a folder that exists in the container
       - ./sms_logger.py:/build/misc/scripts/sms_logger.py:ro
-    command: bash -c "sleep 15 && pip install -U pip psycopg2-binary mysql-connector-python && exec python /build/misc/scripts/sms_logger.py"
+    command: bash -c "mkdir -p /build/misc/scripts && sleep 15 && pip install -U pip psycopg2-binary mysql-connector-python && exec python /build/misc/scripts/sms_logger.py"
     environment:
       DB_TYPE_MYSQL: ${DB_TYPE_MYSQL:-0}
       AMQP_BROKER_HOST: ${AMQP_BROKER_HOST:-rabbitmq}
       AMQP_BROKER_PORT: ${AMQP_BROKER_PORT:-5672}
       AMQP_SPEC_FILE: '/etc/jasmin/resource/amqp0-9-1.xml'
-      AMQP_HEARTBEAT: 60  # Enable 60-second heartbeats
-      RECONNECT_DELAY: 5  # Initial reconnect delay
-      MAX_RECONNECT_DELAY: 60  # Max reconnect delay
+      AMQP_HEARTBEAT: 60
+      RECONNECT_DELAY: 5
+      MAX_RECONNECT_DELAY: 60
       DB_HOST: ${DB_HOST:-db}
       DB_DATABASE: ${DB_DATABASE:-jasmin}
       DB_TABLE: ${DB_TABLE:-submit_log}
